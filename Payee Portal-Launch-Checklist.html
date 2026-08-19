@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collect — Launch Readiness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0e1636;
+    --navy-2:#141e46;
+    --blue:#2540e5;
+    --blue-2:#3355ff;
+    --blue-soft:#eef1ff;
+    --ink:#151b2e;
+    --ink-2:#5b6478;
+    --ink-3:#9aa2b3;
+    --line:#e7eaf1;
+    --bg:#f4f5f9;
+    --card:#ffffff;
+    --red:#e5484d;
+    --red-soft:#fdecec;
+    --amber:#e8a91d;
+    --amber-soft:#fdf3da;
+    --green:#1ea35c;
+    --green-soft:#e3f5ea;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Poppins',system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+    padding:0 0 80px;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:0 20px}
+
+  /* ---------- launch-control header ---------- */
+  .top{
+    background:radial-gradient(120% 140% at 85% -10%, #24347a 0%, var(--navy-2) 45%, var(--navy) 100%);
+    color:#fff;padding:34px 0 30px;position:relative;overflow:hidden;
+  }
+  .top::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size:22px 22px;opacity:.5;pointer-events:none}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:#9db0ff;position:relative}
+  h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:6px 0 4px;position:relative}
+  .sub{color:#c3ccf0;font-size:13.5px;position:relative;max-width:560px}
+
+  /* readiness gate — the signature element */
+  .gate{
+    margin-top:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+    border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:20px;
+    position:relative;backdrop-filter:blur(4px);
+  }
+  .gate-light{width:56px;height:56px;border-radius:50%;flex-shrink:0;position:relative;
+    display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-weight:700;font-size:11px;
+    transition:background .4s, box-shadow .4s}
+  .gate.nogo .gate-light{background:var(--red);box-shadow:0 0 0 6px rgba(229,72,77,.18),0 0 24px rgba(229,72,77,.5)}
+  .gate.go .gate-light{background:var(--green);box-shadow:0 0 0 6px rgba(30,163,92,.2),0 0 26px rgba(30,163,92,.55)}
+  .gate-tx{flex:1;min-width:0}
+  .gate-status{font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .gate.nogo .gate-status{color:#ffb4b6}
+  .gate.go .gate-status{color:#8ff0bb}
+  .gate-note{font-size:12.5px;color:#c3ccf0;margin-top:2px}
+  .gate-count{font-family:'Space Mono',monospace;font-size:12px;color:#9db0ff;white-space:nowrap;text-align:right}
+  .gate-count b{display:block;font-size:22px;color:#fff}
+
+  /* overall progress */
+  .prog-shell{margin-top:16px;position:relative}
+  .prog-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:#c3ccf0;margin-bottom:7px;font-family:'Space Mono',monospace}
+  .bar{height:8px;background:rgba(255,255,255,.14);border-radius:99px;overflow:hidden}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue-2),#7fd0ff);border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+  /* ---------- controls ---------- */
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:22px 0 6px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:99px;border:1px solid var(--line);
+    background:#fff;color:var(--ink-2);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
+  .chip:hover{border-color:#cdd4e6}
+  .chip.on{background:var(--navy-2);color:#fff;border-color:var(--navy-2)}
+  .chip .dot{width:8px;height:8px;border-radius:50%}
+  .chip .dot.r{background:var(--red)} .chip .dot.a{background:var(--amber)} .chip .dot.g{background:var(--green)}
+  .spacer{flex:1}
+  .txtbtn{font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink-2);background:none;border:none;cursor:pointer;padding:7px 10px;border-radius:8px}
+  .txtbtn:hover{background:#eceef4;color:var(--ink)}
+
+  /* ---------- sections ---------- */
+  .section{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:14px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(20,30,70,.04)}
+  .sec-head{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;user-select:none}
+  .sec-num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--blue);
+    background:var(--blue-soft);width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .sec-title{font-weight:700;font-size:15.5px;flex:1;letter-spacing:-.01em}
+  .sec-meta{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-3);white-space:nowrap}
+  .sec-ring{--p:0;width:26px;height:26px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--green) calc(var(--p)*1%), var(--line) 0);
+    display:flex;align-items:center;justify-content:center;transition:.4s}
+  .sec-ring::after{content:"";width:18px;height:18px;border-radius:50%;background:#fff}
+  .sec-ring.done{background:var(--green)}
+  .sec-ring.done::after{content:"✓";width:auto;height:auto;background:none;color:#fff;font-size:13px;font-weight:800}
+  .chev{color:var(--ink-3);transition:transform .25s;flex-shrink:0}
+  .section.collapsed .chev{transform:rotate(-90deg)}
+  .sec-body{padding:2px 18px 12px}
+  .section.collapsed .sec-body{display:none}
+  .sec-hint{font-size:12.5px;color:var(--ink-2);background:#f7f9fc;border-left:3px solid var(--line);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin:4px 0 12px}
+
+  /* ---------- items ---------- */
+  .item{display:flex;gap:12px;align-items:flex-start;padding:11px 6px;border-top:1px solid #f1f3f8;cursor:pointer}
+  .item:first-child{border-top:none}
+  .cbox{width:22px;height:22px;border-radius:7px;border:2px solid #cbd2e4;flex-shrink:0;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;transition:.15s;background:#fff}
+  .cbox svg{width:13px;height:13px;opacity:0;transform:scale(.5);transition:.15s;color:#fff}
+  .item.checked .cbox{background:var(--green);border-color:var(--green)}
+  .item.checked .cbox svg{opacity:1;transform:scale(1)}
+  .item-tx{flex:1;font-size:14px;color:var(--ink);transition:.15s}
+  .item.checked .item-tx{color:var(--ink-3);text-decoration:line-through;text-decoration-color:#cbd2e4}
+  .tag{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;flex-shrink:0;margin-top:2px;letter-spacing:.03em}
+  .tag.r{background:var(--red-soft);color:#c5383c} .tag.a{background:var(--amber-soft);color:#a97b12} .tag.g{background:var(--green-soft);color:#177a45}
+
+  /* nested sub-items (the funnel steps) */
+  .subs{margin:4px 0 4px 34px;padding-left:14px;border-left:2px dashed #e2e6f0;display:flex;flex-direction:column;gap:2px}
+  .sub{display:flex;gap:9px;align-items:center;padding:6px 4px;cursor:pointer;font-size:13px}
+  .sub .cbox{width:18px;height:18px;border-radius:6px}
+  .sub .cbox svg{width:11px;height:11px}
+  .sub.checked .cbox{background:var(--green);border-color:var(--green)}
+  .sub.checked span{color:var(--ink-3);text-decoration:line-through}
+
+  .baritem{display:none}
+  body.hide-done .item.checked{display:none}
+  body.hide-done .sub.checked{display:none}
+
+  /* min-bar callout */
+  .minbar{margin-top:22px;background:var(--navy-2);color:#fff;border-radius:16px;padding:20px 22px}
+  .minbar h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .minbar p{font-size:13px;color:#c3ccf0}
+  .minbar b{color:#8ff0bb}
+
+  .foot{text-align:center;color:var(--ink-3);font-size:11.5px;margin-top:26px;font-family:'Space Mono',monospace}
+
+  @media print{
+    .controls,.chev,.txtbtn{display:none}
+    .section.collapsed .sec-body{display:block}
+    .top{background:var(--navy-2)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{padding-bottom:0}
+  }
+  @media (max-width:560px){
+    h1{font-size:24px} .gate{flex-wrap:wrap} .gate-count{text-align:left}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Collect · BharatNXT · Launch Readiness</div>
+    <h1>Launch checklist</h1>
+    <p class="sub">Clear the blockers, prove the funnel, instrument it, then ship. Your progress saves automatically in this browser.</p>
+
+    <div class="gate nogo" id="gate">
+      <div class="gate-light" id="gateLight">NO-GO</div>
+      <div class="gate-tx">
+        <div class="gate-status" id="gateStatus">Not ready to launch</div>
+        <div class="gate-note" id="gateNote">Blockers must be cleared before you can ship.</div>
+      </div>
+      <div class="gate-count"><b id="blockLeft">0</b>blockers left</div>
+    </div>
+
+    <div class="prog-shell">
+      <div class="prog-row"><span id="progLabel">0 of 0 complete</span><span id="progPct">0%</span></div>
+      <div class="bar"><i id="progBar"></i></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="filters">
+      <button class="chip on" data-filter="all">All</button>
+      <button class="chip" data-filter="r"><span class="dot r"></span>Blockers</button>
+      <button class="chip" data-filter="a"><span class="dot a"></span>Important</button>
+      <button class="chip" data-filter="g"><span class="dot g"></span>Nice-to-have</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="txtbtn" id="hideDone">Hide done</button>
+    <button class="txtbtn" id="expandAll">Expand all</button>
+    <button class="txtbtn" onclick="window.print()">Print / PDF</button>
+    <button class="txtbtn" id="reset">Reset</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="minbar">
+    <h3>🚦 Minimum bar to launch</h3>
+    <p>All <b>blockers</b> closed · core funnel (WhatsApp → track → KYC → settle → receipt) tested in production · the <b>7-step analytics</b> live · rollback / kill switch ready. Everything Important or Nice-to-have can be staged or fast-followed.</p>
+  </div>
+
+  <div class="foot">Derived from the Collect PRD · check items to update readiness</div>
+</div>
+
+<script>
+// ---------- checklist data ----------
+// p = priority: r (blocker) / a (important) / g (nice-to-have)
+const DATA = [
+  {n:"01", title:"Compliance & legal", hint:"Clear these first — they gate everything below.", items:[
+    {p:"r", t:"KYC rules signed off — PAN + OTP + name-match confirmed sufficient to release/settle funds"},
+    {p:"r", t:"Over-limit threshold defined (exact ₹ amount that forces a KYC upgrade)"},
+    {p:"r", t:"Escrow flow legally reviewed — status claims are accurate and defensible"},
+    {p:"r", t:"Early-settlement (\u201cget it today\u201d) confirmed legally permitted; fee structure approved"},
+    {p:"r", t:"GST fee invoice format approved by finance / tax"},
+    {p:"a", t:"Name-mismatch and \u201cPAN not found\u201d handling policies documented and approved"},
+    {p:"a", t:"Returned-to-sender / declined-payment refund path reviewed"},
+    {p:"a", t:"Cashback / referral program compliant (funding source, cap, T&Cs published)"},
+    {p:"a", t:"Data-consent and privacy policy live and linked in the guest flow"},
+    {p:"g", t:"Grievance / complaint redressal path documented"},
+  ]},
+  {n:"02", title:"WhatsApp entry", hint:"External dependency — Meta template approval has lead time. Start early.", items:[
+    {p:"r", t:"WhatsApp Business API / BSP provider set up and verified"},
+    {p:"r", t:"Message templates submitted to Meta and approved (Classic + Instant)"},
+    {p:"r", t:"Template variables tested — sender name, amount, link render correctly"},
+    {p:"a", t:"Link routing works: tap → correct guest session with the right payment pre-loaded"},
+    {p:"a", t:"Instant-receipt link opens the receipt view directly"},
+    {p:"a", t:"Delivery / failure handling defined for undelivered messages"},
+    {p:"g", t:"Re-notification / reminder policy defined (frequency cap set)"},
+  ]},
+  {n:"03", title:"Product readiness — funnel", hint:"Every PRD screen works end-to-end.", items:[
+    {p:"r", t:"OTP sign-in works; OTP verified before session completes"},
+    {p:"r", t:"PAN auto-fetch works across all three states: fetched / mismatch / not-found"},
+    {p:"r", t:"Verify-to-get-paid gate locks money actions for unverified users"},
+    {p:"a", t:"KYC \u201cunder review\u201d and \u201cname mismatch hold\u201d states display correctly"},
+    {p:"r", t:"All home states render: verified / unverified / onboarded / new-empty / service-down"},
+    {p:"a", t:"Summary card shows accurate \u201creceived\u201d and \u201cin-process\u201d totals"},
+    {p:"r", t:"Money-flow tracker shows: on-the-way / received / failed-declined / credited (UTR)"},
+    {p:"r", t:"Settle-early review → confirm → success flow works and moves money"},
+    {p:"r", t:"Over-limit case correctly routes to KYC upgrade"},
+    {p:"a", t:"Success confirmation + receipt generated"},
+    {p:"a", t:"Accept-payment flow + approve/reject controls work for onboarded sellers"},
+    {p:"a", t:"Payments list + empty state; refer & earn dashboard accurate"},
+    {p:"a", t:"App-download CTAs deep-link to the right store listing"},
+    {p:"a", t:"Payment receipt PDF + GST fee invoice generate correctly"},
+    {p:"r", t:"Guest gating: sensitive data/actions blurred before sign-in — no leakage"},
+  ]},
+  {n:"04", title:"Edge cases & error states", hint:"These exist in the prototype — confirm they behave in production.", items:[
+    {p:"r", t:"Bank-declined payment shows \u201cno money deducted\u201d — no false credit"},
+    {p:"a", t:"Service-down banner appears when Priority Pay is unavailable; payments still process"},
+    {p:"a", t:"PAN mismatch does not auto-approve"},
+    {p:"a", t:"Settlement above limit cannot proceed without KYC upgrade"},
+    {p:"a", t:"Expired / invalid WhatsApp link handled gracefully"},
+    {p:"a", t:"Session timeout / re-auth handled"},
+    {p:"g", t:"Duplicate-tap / double-settle protection (idempotency)"},
+  ]},
+  {n:"05", title:"Analytics & instrumentation", hint:"You can't prove the bet without this — it's a blocker.", items:[
+    {p:"r", t:"Full 7-step funnel tracked end-to-end", subs:[
+      "Message delivered → tapped",
+      "Tapped → payment viewed",
+      "Viewed → settle/accept action started",
+      "Action started → KYC completed",
+      "KYC completed → action completed (money moved)",
+      "Completed → app installed",
+      "Installed → repeat session",
+    ]},
+    {p:"r", t:"Drop-off measurable at every arrow in the funnel"},
+    {p:"a", t:"A/B framework ready (web-first vs app-first; settle-offer variants)"},
+    {p:"a", t:"Attribution wired for app installs coming from Collect"},
+    {p:"a", t:"Dashboards built and shared with the team before launch"},
+    {p:"g", t:"Alerting on funnel-stage anomalies"},
+  ]},
+  {n:"06", title:"Security & data", hint:"", items:[
+    {p:"r", t:"PII (PAN, phone, bank details) encrypted at rest and in transit"},
+    {p:"r", t:"Guest sessions can't access another seller's data (authz tested)"},
+    {p:"a", t:"Rate limiting on OTP and settle endpoints"},
+    {p:"a", t:"Security review / pen test of money-movement paths"},
+    {p:"g", t:"Audit log for all money-moving actions"},
+  ]},
+  {n:"07", title:"Support & ops", hint:"", items:[
+    {p:"r", t:"Support team briefed on the flow, KYC states, and settlement timing"},
+    {p:"a", t:"Support scripts for top questions (\u201cwhere's my money?\u201d, \u201cwhy KYC?\u201d, \u201cdeclined\u201d)"},
+    {p:"a", t:"Escalation path for stuck payments / stuck KYC"},
+    {p:"a", t:"Refund / returned-payment operational runbook"},
+    {p:"g", t:"Internal FAQ + demo recording for CS / sales"},
+  ]},
+  {n:"08", title:"Go-to-market & rollout", hint:"", items:[
+    {p:"a", t:"Staged rollout plan defined (small % of payments → monitor → widen)"},
+    {p:"a", t:"Kill switch / feature flag to disable Collect if something breaks"},
+    {p:"a", t:"Success criteria + guardrail thresholds agreed before launch"},
+    {p:"a", t:"Stakeholders aligned on launch date and comms"},
+    {p:"g", t:"Pricing / fee messaging finalized for the settle-early offer"},
+  ]},
+  {n:"09", title:"Final gate (day-of)", hint:"", items:[
+    {p:"r", t:"Full end-to-end prod test with a real (small) payment, WhatsApp → app nudge"},
+    {p:"r", t:"All blockers above closed"},
+    {p:"a", t:"Rollback tested (feature flag off restores prior state cleanly)"},
+    {p:"a", t:"On-call / war-room coverage scheduled for the launch window"},
+    {p:"a", t:"Analytics confirmed flowing — live events visible before opening the gates"},
+  ]},
+  {n:"10", title:"Post-launch (first 1–2 weeks)", hint:"Validate the PRD hypotheses against real numbers.", items:[
+    {p:"a", t:"Watch the 7-step funnel daily; identify the biggest drop-off"},
+    {p:"a", t:"Validate: WhatsApp tap rate beats push/email"},
+    {p:"a", t:"Validate: web-first beats app-first on first successful action"},
+    {p:"a", t:"Validate: settle-early offer pulls users through KYC"},
+    {p:"a", t:"Validate: cashback nudge converts to installs"},
+    {p:"a", t:"Validate: escrow tracker correlates with higher completion"},
+    {p:"a", t:"Track support-contact volume and top reasons"},
+    {p:"a", t:"Monitor failed / declined / returned rates for anomalies"},
+    {p:"g", t:"Prioritize fast-follow fixes based on where sellers fall off"},
+  ]},
+];
+
+const TICK = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const STORE_KEY = 'collect-launch-checklist-v1';
+
+// ---------- load saved state ----------
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch(e){ state = {}; }
+function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
+function id(si, ii, sub){ return sub==null ? `s${si}i${ii}` : `s${si}i${ii}sub${sub}`; }
+
+// ---------- render ----------
+const list = document.getElementById('list');
+DATA.forEach((sec, si) => {
+  const el = document.createElement('div');
+  el.className = 'section';
+  el.dataset.si = si;
+  let itemsHtml = '';
+  sec.items.forEach((it, ii) => {
+    let subHtml = '';
+    if(it.subs){
+      subHtml = '<div class="subs">' + it.subs.map((s, k) =>
+        `<div class="sub" data-key="${id(si,ii,k)}"><div class="cbox">${TICK}</div><span>${s}</span></div>`
+      ).join('') + '</div>';
+    }
+    itemsHtml += `<div class="item" data-key="${id(si,ii)}" data-p="${it.p}">
+        <div class="cbox">${TICK}</div>
+        <div class="item-tx">${it.t}</div>
+        <span class="tag ${it.p}">${it.p==='r'?'BLOCK':it.p==='a'?'IMP':'NICE'}</span>
+      </div>${subHtml}`;
+  });
+  el.innerHTML = `
+    <div class="sec-head">
+      <div class="sec-num">${sec.n}</div>
+      <div class="sec-title">${sec.title}</div>
+      <div class="sec-meta" data-meta></div>
+      <div class="sec-ring" data-ring></div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="sec-body">
+      ${sec.hint ? `<div class="sec-hint">${sec.hint}</div>` : ''}
+      ${itemsHtml}
+    </div>`;
+  list.appendChild(el);
+
+  el.querySelector('.sec-head').addEventListener('click', () => el.classList.toggle('collapsed'));
+});
+
+// ---------- interaction ----------
+function toggle(key){ state[key] = !state[key]; save(); paint(); }
+document.querySelectorAll('.item').forEach(it => it.addEventListener('click', () => toggle(it.dataset.key)));
+document.querySelectorAll('.sub').forEach(s => s.addEventListener('click', e => { e.stopPropagation(); toggle(s.dataset.key); }));
+
+// ---------- paint (reflect state everywhere) ----------
+function paint(){
+  let total=0, done=0, blockTotal=0, blockDone=0;
+  document.querySelectorAll('.section').forEach(sec => {
+    let st=0, sd=0;
+    sec.querySelectorAll('.item, .sub').forEach(node => {
+      const on = !!state[node.dataset.key];
+      node.classList.toggle('checked', on);
+      // count leaf nodes: subs count as leaves; an item WITH subs is not counted itself
+      const isParentWithSubs = node.classList.contains('item') && node.nextElementSibling && node.nextElementSibling.classList.contains('subs');
+      if(!isParentWithSubs){
+        st++; total++;
+        if(on){ sd++; done++; }
+        if(node.dataset.p==='r'){ blockTotal++; if(on) blockDone++; }
+      }
+    });
+    const meta = sec.querySelector('[data-meta]');
+    const ring = sec.querySelector('[data-ring]');
+    meta.textContent = `${sd}/${st}`;
+    const pct = st ? Math.round(sd/st*100) : 100;
+    ring.style.setProperty('--p', pct);
+    ring.classList.toggle('done', sd===st && st>0);
+  });
+
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = `${done} of ${total} complete`;
+  document.getElementById('progPct').textContent = pct + '%';
+
+  const left = blockTotal - blockDone;
+  document.getElementById('blockLeft').textContent = left;
+  const gate = document.getElementById('gate');
+  const go = left === 0;
+  gate.classList.toggle('go', go);
+  gate.classList.toggle('nogo', !go);
+  document.getElementById('gateLight').textContent = go ? 'GO' : 'NO-GO';
+  document.getElementById('gateStatus').textContent = go ? 'Blockers cleared' : 'Not ready to launch';
+  document.getElementById('gateNote').textContent = go
+    ? 'All hard blockers are done. Confirm the final gate, then ship.'
+    : 'Blockers must be cleared before you can ship.';
+}
+
+// ---------- filters ----------
+let filter = 'all';
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on');
+  filter = c.dataset.filter;
+  document.querySelectorAll('.item').forEach(it => {
+    it.style.display = (filter==='all' || it.dataset.p===filter) ? '' : 'none';
+    const subs = it.nextElementSibling;
+    if(subs && subs.classList.contains('subs')) subs.style.display = (filter==='all' || it.dataset.p===filter) ? '' : 'none';
+  });
+}));
+
+document.getElementById('hideDone').addEventListener('click', function(){
+  document.body.classList.toggle('hide-done');
+  this.textContent = document.body.classList.contains('hide-done') ? 'Show done' : 'Hide done';
+});
+let expanded = true;
+document.getElementById('expandAll').addEventListener('click', function(){
+  expanded = !expanded;
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('collapsed', !expanded));
+  this.textContent = expanded ? 'Collapse all' : 'Expand all';
+});
+document.getElementById('reset').addEventListener('click', () => {
+  if(confirm('Clear all checkmarks? This cannot be undone.')){ state = {}; save(); paint(); }
+});
+
+paint();
+</script>
+</body>
+</html>
